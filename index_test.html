@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASEP Chapter 3 - Sensitivity Analysis</title>
+
+    <!-- Foundation CSS for styling -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/css/foundation.min.css">
+
+    <!-- Plotly.js for plotting -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <!-- jQuery (required by Foundation) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Vue.js -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+    <script src="./interpolate.js"></script>
+    <script src="./nscp_15.js"></script>
+    <script src="./nscp_24.js"></script>
+    <script src="./generate_latex.js"></script>
+</head>
+
+<body>
+    <div id="app" class="grid-container">
+        <div class="grid-x grid-padding-x">
+            <div class="cell">
+                <center><h1>{{ title }}</h1></center>
+            </div>
+        </div>
+
+        <div class="grid-x grid-padding-x">
+            <div class="cell medium-6">
+                <label>City
+                    <select v-model="selectedCity">
+                        <option v-for="city in cities" :value="city">{{ city.name }}</option>
+                    </select>
+                </label>
+            </div>
+            <div class="cell medium-6">
+                <label>Material Type
+                    <select v-model="materialType">
+                        <option value="concrete">Concrete</option>
+                        <option value="steel">Steel</option>
+                        <option value="concrete_dual">Concrete Dual</option>
+                    </select>
+                </label>
+            </div>
+        </div>
+
+        <div class="grid-x grid-padding-x">
+            <div class="cell medium-6">
+                <button @click="generateGraph" class="button large">Generate Graph</button>
+            </div>
+        </div>
+
+        <!-- Display calculated value -->
+        <div class="grid-x grid-padding-x">
+            <div class="cell">
+                <p>DATA : SAM {{reportss_sam }} , {{ s1 }} SHADE {{ ss2 }} , {{ ss12 }}</p>
+            </div>
+        </div>
+
+        <!-- Plot area -->
+<!-- Plot areas for each soil type -->
+<div class="grid-x grid-padding-x">
+    <div class="cell medium-6">
+        <div id="graph_s_a" style="width:100%;height:500px;"></div>
+    </div>
+    <div class="cell medium-6">
+        <div id="graph_s_b" style="width:100%;height:500px;"></div>
+    </div>
+    <div class="cell medium-6">
+        <div id="graph_s_c" style="width:100%;height:500px;"></div>
+    </div>
+    <div class="cell medium-6">
+        <div id="graph_s_d" style="width:100%;height:500px;"></div>
+    </div>
+    <div class="cell medium-6">
+        <div id="graph_s_e" style="width:100%;height:500px;"></div>
+    </div>
+</div>
+    </div>
+
+    <!-- Foundation JS -->
+    <script src="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/js/foundation.min.js"></script>
+
+    <script>
+        // Initialize Foundation once the DOM is ready
+        $(document).ready(function () {
+            $(document).foundation();
+        });
+
+
+        new Vue({
+            el: "#app",
+            data: {
+                title: "ASEP Chapter 3 - Sensitivity Analysis",
+                selectedCity: null,
+                materialType: "concrete",
+                cities: [
+                    { name: "Mati, Davao Oriental", fault_input: 2.6, ss_shade: 2.6, s1_shade: 0.7, ss_sam: 2.95, s1_sam: 1.1 },
+                    { name : "Manila", fault_input : 9.6, ss_shade : 1.59, s1_shade: 0.64, ss_sam: 1.26, s1_sam: 0.51},
+                    { name: "Bogo City", fault_input: 0.38, ss_shade: 1.36, s1_shade: 0.5, ss_sam: 1.45, s1_sam: 0.48 },
+                    { name: "Moalboal", fault_input: 8.1, ss_shade: 1.43, s1_shade: 0.48, ss_sam: 1.28, s1_sam: 0.45 },
+                    { name: "Santander", fault_input: 12.4, ss_shade: 1.52, s1_shade: 0.53, ss_sam: 1.35, s1_sam: 0.48 },
+                    { name: "Tuburan", fault_input: 22.8, ss_shade: 1.35, s1_shade: 0.45, ss_sam: 1.44, s1_sam: 0.58 },
+                    { name: "Danao City", fault_input: 2.2, ss_shade: 1.53, s1_shade: 0.7, ss_sam: 1.65, s1_sam: 0.55 },
+                    { name: "Daanbantayan", fault_input: 3.3, ss_shade: 1.42, s1_shade: 0.5, ss_sam: 1.55, s1_sam: 0.49 },
+                    { name: "Carcar City", fault_input: 4.3, ss_shade: 1.45, s1_shade: 0.53, ss_sam: 1.41, s1_sam: 0.4 },
+                    { name: "Bantayan Island", fault_input: 23.7, ss_shade: 1.18, s1_shade: 0.38, ss_sam: 1.21, s1_sam: 0.42 },
+                    { name: "Dalaguete", fault_input: 3.5, ss_shade: 1.47, s1_shade: 0.52, ss_sam: 1.31, s1_sam: 0.41 },
+                    { name: "Malasiqui, Pangasinan", fault_input: 22.6, ss_shade: 1.38, s1_shade: 0.5, ss_sam: 1.35, s1_sam: 0.47 },
+                    { name: "Vintar, Ilocos Norte", fault_input: 0.54, ss_shade: 2.1, s1_shade: 0.7, ss_sam: 2.2, s1_sam: 1.51 },
+                    { name: "Bauang, La Union", fault_input: 14.1, ss_shade: 2.0, s1_shade: 0.7, ss_sam: 1.66, s1_sam: 0.59 },
+                    { name: "City of Alaminos, Pangasinan", fault_input: 17.1, ss_shade: 1.94, s1_shade: 0.9, ss_sam: 1.76, s1_sam: 0.65 },
+                    { name: "Ballesteros, Cagayan", fault_input: 23.4, ss_shade: 1.65, s1_shade: 0.6, ss_sam: 1.53, s1_sam: 0.57 },
+                    { name: "Amulung, Cagayan", fault_input: 15.7, ss_shade: 1.65, s1_shade: 0.6, ss_sam: 1.45, s1_sam: 0.58 },
+                    { name: "Nagtipunan, Quirino", fault_input: 20.8, ss_shade: 1.62, s1_shade: 0.6, ss_sam: 1.33, s1_sam: 0.55 },
+                    { name: "City of Santiago, Isabela", fault_input: 5.9, ss_shade: 1.38, s1_shade: 0.63, ss_sam: 1.16, s1_sam: 0.48 },
+                    { name: "Benito Soliven, Isabela", fault_input: 27.1, ss_shade: 1.57, s1_shade: 0.65, ss_sam: 1.33, s1_sam: 0.58 },
+                    { name: "Quirino, Isabela", fault_input: 13.3, ss_shade: 1.63, s1_shade: 0.65, ss_sam: 1.56, s1_sam: 0.59 },
+                    { name: "Tagum City", fault_input: 12.4, ss_shade: 1.6, s1_shade: 0.7, ss_sam: 2.05, s1_sam: 0.73 },
+                    { name: "Malita", fault_input: 2.3, ss_shade: 2.6, s1_shade: 0.7, ss_sam: 2.93, s1_sam: 1.05 },
+                    { name: "Mt. Apo Natural Park", fault_input: 9.6, ss_shade: 1.61, s1_shade: 0.6, ss_sam: 1.82, s1_sam: 0.6 },
+                    { name: "General Santos City", fault_input: 17.9, ss_shade: 2.2, s1_shade: 0.7, ss_sam: 2.05, s1_sam: 0.71 },
+                    { name: "Kidapawan City", fault_input: 7.1, ss_shade: 2.03, s1_shade: 0.7, ss_sam: 2.03, s1_sam: 0.64 },
+                    { name: "Greek Hills Bukidnon", fault_input: 25.4, ss_shade: 1.85, s1_shade: 0.62, ss_sam: 2.0, s1_sam: 0.62 },
+                    { name: "Lake Sebu", fault_input: 11.9, ss_shade: 2.11, s1_shade: 0.7, ss_sam: 2.0, s1_sam: 0.77 },
+                    { name: "Cotabato City", fault_input: 22.9, ss_shade: 2.33, s1_shade: 0.7, ss_sam: 1.96, s1_sam: 0.83 },
+                    { name: "Shariff Aguak", fault_input: 4.8, ss_shade: 2.1, s1_shade: 0.7, ss_sam: 2.1, s1_sam: 0.84 },
+                    { name: "Jolo City", fault_input: 236.7, ss_shade: 2.04, s1_shade: 0.24, ss_sam: 0.7, s1_sam: 0.24 },
+                    { name: "Marawi City", fault_input: 0.626, ss_shade: 2.02, s1_shade: 0.81, ss_sam: 2.02, s1_sam: 0.81 },
+                    { name: "Buluan", fault_input: 11.2, ss_shade: 2.1, s1_shade: 0.6, ss_sam: 2.1, s1_sam: 0.6 },
+                    { name: "Camarines Norte", fault_input: 39.7, ss_shade: 1.35, s1_shade: 0.48, ss_sam: 1.4, s1_sam: 0.47 },
+                    { name: "Camarines Sur", fault_input: 15.2, ss_shade: 1.81, s1_shade: 0.58, ss_sam: 1.7, s1_sam: 0.58 },
+                    { name: "Masbate", fault_input: 17.1, ss_shade: 1.88, s1_shade: 0.85, ss_sam: 2.1, s1_sam: 0.85 },
+                    { name: "Catanduanes", fault_input: 79.7, ss_shade: 2.3, s1_shade: 0.82, ss_sam: 2.5, s1_sam: 0.8 },
+                    { name: "Maasin City", fault_input: 19.3, ss_shade: 1.54, s1_shade: 0.58, ss_sam: 1.92, s1_sam: 0.59 },
+                    { name: "Borongan City", fault_input: 12.6, ss_shade: 2.37, s1_shade: 0.89, ss_sam: 2.58, s1_sam: 0.88 },
+                    { name: "Biliran", fault_input: 9.3, ss_shade: 1.86, s1_shade: 0.71, ss_sam: 2.02, s1_sam: 0.64 },
+                    { name: "Cagayan de Oro City", fault_input: 17.6, ss_shade: 1.09, s1_shade: 0.47, ss_sam: 1.27, s1_sam: 0.48 },
+                    { name: "Iligan City", fault_input: 10.2, ss_shade: 1.91, s1_shade: 0.75, ss_sam: 1.61, s1_sam: 0.61 },
+                    { name: "Malaybalay City", fault_input: 1.5, ss_shade: 1.66, s1_shade: 0.74, ss_sam: 1.74, s1_sam: 0.6 }
+        
+                ],
+                calculatedValue: 0
+            },
+            mounted() {
+                // Set default selected city and material type
+                this.selectedCity = this.cities[0];
+                this.materialType = "concrete";
+            },
+            methods: {
+    generateGraph() {
+        var city = this.selectedCity;
+        var name = city.name;
+        var fault = city.fault_input;
+        var ss = city.ss_sam;
+        var s1 = city.s1_sam;
+        var ss2 = city.ss_shade;
+        var ss12 = city.s1_shade;
+        var material = this.materialType;
+        var heights = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150];
+        
+        var soil_types = ["s_a", "s_b", "s_c", "s_d", "s_e"];
+        // var soil_types_pretty = ["Sa", "Sb", "Sc", "Sd", "Se"];
+
+        soil_types.forEach((soil_type, index) => {
+            
+            var generate_data = generateSensivity(name, material, fault, soil_type, ss, s1, ss2, ss12);
+            
+            // Perform division calculation based on selected city's ss_sam and s1_sam values
+            this.calculatedValue = (ss / s1).toFixed(2);
+            this.reportss_sam = ss;
+
+            const trace1 = {
+                        x: generate_data["period"], // Periods for NSCP 2015
+                        y: generate_data["nscp15"],  // Heights
+                        mode: 'lines',
+                        name: 'NSCP 2015',
+                        line: { color: 'blue' }
+                    };
+
+                    const trace2 = {
+                        x: generate_data["period"], // Periods for NSCP 8th
+                        y: generate_data["sam"],  // Heights
+                        mode: 'lines',
+                        name: 'SAM',
+                        line: { color: 'red' }
+                    };
+
+                    const trace3 = {
+                        x: generate_data["period"], // Periods for NSCP 8th
+                        y: generate_data["shade"],  // Heights
+                        mode: 'lines',
+                        name: 'SHADE',
+                        line: { color: 'green' }
+                    };
+                    // generate_data["nscp15_min"] 
+                    const trace4 = {
+                        x: generate_data["period"], // Periods for NSCP 2015
+                        y: Array(generate_data["period"].length).fill(generate_data["nscp15_min"]), // Constant y value
+                        mode: 'lines',
+                        name: 'NSCP 2015 Min.',
+                        line: { color: 'blue', dash: 'dash' }
+                    };
+
+                    const trace5 = {
+                        x: generate_data["period"], // Periods for NSCP 2015
+                        y: Array(generate_data["period"].length).fill(generate_data["sam_min"]), // Constant y value
+                        mode: 'lines',
+                        name: 'SAM Min.',
+                        line: { color: 'red', dash: 'dash' }
+                    };
+
+                    const trace6 = {
+                        x: generate_data["period"], // Periods for NSCP 2015
+                        y: Array(generate_data["period"].length).fill(generate_data["shade_min"]), // Constant y value
+                        mode: 'lines',
+                        name: 'SHADE Min.',
+                        line: { color: 'green', dash: 'dash' }
+                    };
+
+                    // data.push(trace4);
+            const data = [trace1, trace2, trace3,trace4,trace5,trace6];
+            
+            var soil_report_pretty = (soil_type == "s_a") ? "Sa" : (soil_type == "s_b") ? "Sb" : (soil_type == "s_c") ? "Sc" : (soil_type == "s_d") ? "Sd" : "Se";
+
+            const layout = {
+                title: `Base Shear Coefficient vs Period for ${city.name} (Soil Type: ${soil_report_pretty})`,
+                xaxis: { title: 'Period (sec)' },
+                yaxis: { title: 'Base Shear Coefficient' }
+            };
+
+            Plotly.newPlot(`graph_${soil_type}`, data, layout);
+        });
+    }
+    }
+        });
+    </script>
+</body>
+
+</html>

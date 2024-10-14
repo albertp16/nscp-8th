@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASEP Chapter 3 - Sensitivity Analysis</title>
+
+    <!-- Foundation CSS for styling -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/css/foundation.min.css">
+
+    <!-- Plotly.js for plotting -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+
+    <!-- jQuery (required by Foundation) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- Vue.js -->
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.js"></script>
+
+    <style>
+        .select-box {
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        .graph-container {
+            width: 100%;
+            height: 500px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .button.primary {
+            background-color: #2199e8;
+            border-color: #2199e8;
+            color: white;
+        }
+
+        .button.primary:hover {
+            background-color: #0a6dbf;
+            border-color: #0a6dbf;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app" class="grid-container">
+        <div class="grid-x grid-padding-x">
+            <div class="cell">
+                <h1 style="font-weight: bold; font-size: 2.5rem; margin-bottom: 20px;">{{ title }}</h1>
+            </div>
+        </div>
+
+        <div class="grid-x grid-padding-x">
+            <div class="cell medium-6">
+                <label>City
+                    <select v-model="selectedCity" class="select-box">
+                        <option disabled value="">Please select a city</option>
+                        <option v-for="city in cities" :value="city">{{ city.name }}</option>
+                    </select>
+                </label>
+            </div>
+            <div class="cell medium-6">
+                <label>Material Type
+                    <select v-model="materialType" class="select-box">
+                        <option value="concrete">Concrete</option>
+                        <option value="steel">Steel</option>
+                        <option value="concrete_dual">Concrete Dual</option>
+                    </select>
+                </label>
+            </div>
+        </div>
+
+        <div class="grid-x grid-padding-x">
+            <div class="cell medium-6">
+                <button @click="generateGraph" class="button large primary expanded">Generate Graph</button>
+            </div>
+        </div>
+
+        <div class="grid-x grid-padding-x">
+            <div class="cell">
+                <p>DATA: SAM {{ reportss_sam }}, {{ s1 }} SHADE {{ ss2 }}, {{ ss12 }}</p>
+            </div>
+        </div>
+
+        <!-- Plot areas for each soil type -->
+        <div class="grid-x grid-padding-x small-up-1 medium-up-2 large-up-2">
+            <div class="cell">
+                <div id="graph_s_a" class="graph-container"></div>
+            </div>
+            <div class="cell">
+                <div id="graph_s_b" class="graph-container"></div>
+            </div>
+            <div class="cell">
+                <div id="graph_s_c" class="graph-container"></div>
+            </div>
+            <div class="cell">
+                <div id="graph_s_d" class="graph-container"></div>
+            </div>
+            <div class="cell">
+                <div id="graph_s_e" class="graph-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Foundation JS -->
+    <script src="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/js/foundation.min.js"></script>
+
+    <script>
+        // Initialize Foundation once the DOM is ready
+        $(document).ready(function () {
+            $(document).foundation();
+        });
+
+        new Vue({
+            el: "#app",
+            data: {
+                title: "ASEP Chapter 3 - Sensitivity Analysis",
+                selectedCity: null,
+                materialType: "concrete",
+                cities: [
+                    { name: "Mati, Davao Oriental", fault_input: 2.6, ss_shade: 2.6, s1_shade: 0.7, ss_sam: 2.95, s1_sam: 1.1 },
+                    { name : "Manila", fault_input : 9.6, ss_shade : 1.59, s1_shade: 0.64, ss_sam: 1.26, s1_sam: 0.51},
+                    { name: "Bogo City", fault_input: 0.38, ss_shade: 1.36, s1_shade: 0.5, ss_sam: 1.45, s1_sam: 0.48 },
+                    { name: "Moalboal", fault_input: 8.1, ss_shade: 1.43, s1_shade: 0.48, ss_sam: 1.28, s1_sam: 0.45 },
+                    { name: "Santander", fault_input: 12.4, ss_shade: 1.52, s1_shade: 0.53, ss_sam: 1.35, s1_sam: 0.48 },
+                    // Add more cities here as needed...
+                ],
+                reportss_sam: 0,
+                s1: 0,
+                ss2: 0,
+                ss12: 0,
+                calculatedValue: 0
+            },
+            mounted() {
+                // Set default selected city and material type
+                this.selectedCity = this.cities[0];
+                this.materialType = "concrete";
+            },
+            methods: {
+                generateGraph() {
+                    var city = this.selectedCity;
+                    var name = city.name;
+                    var fault = city.fault_input;
+                    var ss = city.ss_sam;
+                    var s1 = city.s1_sam;
+                    var ss2 = city.ss_shade;
+                    var ss12 = city.s1_shade;
+                    var material = this.materialType;
+                    var heights = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150];
+
+                    var soil_types = ["s_a", "s_b", "s_c", "s_d", "s_e"];
+
+                    soil_types.forEach((soil_type) => {
+                        var generate_data = this.generateSensivity(name, material, fault, soil_type, ss, s1, ss2, ss12);
+
+                        // Perform division calculation based on selected city's ss_sam and s1_sam values
+                        this.calculatedValue = (ss / s1).toFixed(2);
+                        this.reportss_sam = ss;
+
+                        const trace1 = {
+                            x: heights, 
+                            y: generate_data["nscp15"],  
+                            mode: 'lines+markers',
+                            name: 'NSCP 2015',
+                            line: { color: 'blue' }
+                        };
+
+                        const trace2 = {
+                            x: heights, 
+                            y: generate_data["sam"],  
+                            mode: 'lines+markers',
+                            name: 'SAM',
+                            line: { color: 'red' }
+                        };
+
+                        const trace3 = {
+                            x: heights, 
+                            y: generate_data["shade"],  
+                            mode: 'lines+markers',
+                            name: 'SHADE',
+                            line: { color: 'green' }
+                        };
+
+                        const data = [trace1, trace2, trace3];
+
+                        var soil_report_pretty = (soil_type === "s_a") ? "Sa" : (soil_type === "s_b") ? "Sb" : (soil_type === "s_c") ? "Sc" : (soil_type === "s_d") ? "Sd" : "Se";
+
+                        const layout = {
+                            title: `Base Shear Coefficient vs Period for ${city.name} (Soil Type: ${soil_report_pretty})`,
+                            xaxis: { title: 'Period (sec)' },
+                            yaxis: { title: 'Base Shear Coefficient' }
+                        };
+
+                        Plotly.newPlot(`graph_${soil_type}`, data, layout);
+                    });
+                },
+                generateSensivity(name, material, fault, soil_type, ss, s1, ss2, ss12) {
+                    // Dummy function for sensitivity data generation
+                    return {
+                        nscp15: heights.map(height => height / 20), // Example: use a dummy calculation
+                        sam: heights.map(height => height / 30),   // Example: use a dummy calculation
+                        shade: heights.map(height => height / 25)  // Example: use a dummy calculation
+                    };
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>
