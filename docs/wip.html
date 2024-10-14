@@ -27,7 +27,7 @@
     <div id="app" class="grid-container">
         <div class="grid-x grid-padding-x">
             <div class="cell">
-                <center><h1>{{ title }}</h1></center>
+                <h1>{{ title }}</h1>
             </div>
         </div>
 
@@ -59,7 +59,7 @@
         <!-- Display calculated value -->
         <div class="grid-x grid-padding-x">
             <div class="cell">
-                <p>DATA : SAM {{reportss_sam }} , {{ s1 }} SHADE {{ ss2 }} , {{ ss12 }}</p>
+                <p>DATA : SAM {{reportss_sam}} , {{ s1 }} SHADE {{ ss2 }} , {{ ss12 }}</p>
             </div>
         </div>
 
@@ -169,7 +169,6 @@
         // var soil_types_pretty = ["Sa", "Sb", "Sc", "Sd", "Se"];
 
         soil_types.forEach((soil_type, index) => {
-            
             var generate_data = generateSensivity(name, material, fault, soil_type, ss, s1, ss2, ss12);
             
             // Perform division calculation based on selected city's ss_sam and s1_sam values
@@ -177,55 +176,29 @@
             this.reportss_sam = ss;
 
             const trace1 = {
-                        x: generate_data["period"], // Periods for NSCP 2015
+                        x: heights, // Periods for NSCP 2015
                         y: generate_data["nscp15"],  // Heights
-                        mode: 'lines',
+                        mode: 'lines+markers',
                         name: 'NSCP 2015',
                         line: { color: 'blue' }
                     };
 
                     const trace2 = {
-                        x: generate_data["period"], // Periods for NSCP 8th
+                        x: heights, // Periods for NSCP 8th
                         y: generate_data["sam"],  // Heights
-                        mode: 'lines',
+                        mode: 'lines+markers',
                         name: 'SAM',
                         line: { color: 'red' }
                     };
 
                     const trace3 = {
-                        x: generate_data["period"], // Periods for NSCP 8th
+                        x: heights, // Periods for NSCP 8th
                         y: generate_data["shade"],  // Heights
-                        mode: 'lines',
+                        mode: 'lines+markers',
                         name: 'SHADE',
                         line: { color: 'green' }
                     };
-                    // generate_data["nscp15_min"] 
-                    const trace4 = {
-                        x: generate_data["period"], // Periods for NSCP 2015
-                        y: Array(generate_data["period"].length).fill(generate_data["nscp15_min"]), // Constant y value
-                        mode: 'lines',
-                        name: 'NSCP 2015 Min.',
-                        line: { color: 'blue', dash: 'dash' }
-                    };
-
-                    const trace5 = {
-                        x: generate_data["period"], // Periods for NSCP 2015
-                        y: Array(generate_data["period"].length).fill(generate_data["sam_min"]), // Constant y value
-                        mode: 'lines',
-                        name: 'SAM Min.',
-                        line: { color: 'red', dash: 'dash' }
-                    };
-
-                    const trace6 = {
-                        x: generate_data["period"], // Periods for NSCP 2015
-                        y: Array(generate_data["period"].length).fill(generate_data["shade_min"]), // Constant y value
-                        mode: 'lines',
-                        name: 'SHADE Min.',
-                        line: { color: 'green', dash: 'dash' }
-                    };
-
-                    // data.push(trace4);
-            const data = [trace1, trace2, trace3,trace4,trace5,trace6];
+            const data = [trace1, trace2, trace3];
             
             var soil_report_pretty = (soil_type == "s_a") ? "Sa" : (soil_type == "s_b") ? "Sb" : (soil_type == "s_c") ? "Sc" : (soil_type == "s_d") ? "Sd" : "Se";
 
