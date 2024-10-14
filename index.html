@@ -27,6 +27,10 @@
     <div id="app" class="grid-container">
         <div class="grid-x grid-padding-x">
             <div class="cell">
+                <label>Upload Image
+                    <input type="file" @change="previewImage">
+                </label>
+                <img v-if="imageUrl" :src="imageUrl" alt="Uploaded Image" style="max-width: 100%; height: auto;">
                 <center><h1>{{ title }}</h1></center>
             </div>
         </div>
@@ -59,7 +63,7 @@
         <!-- Display calculated value -->
         <div class="grid-x grid-padding-x">
             <div class="cell">
-                <p>DATA : SAM {{reportss_sam }} , {{ s1 }} SHADE {{ ss2 }} , {{ ss12 }}</p>
+                <p>DATA : SAM {{ reportss_sam }} , {{ s1 }} SHADE {{ ss2 }} , {{ ss12 }}</p>
             </div>
         </div>
 
@@ -92,7 +96,6 @@
         $(document).ready(function () {
             $(document).foundation();
         });
-
 
         new Vue({
             el: "#app",
