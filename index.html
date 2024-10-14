@@ -27,11 +27,9 @@
     <div id="app" class="grid-container">
         <div class="grid-x grid-padding-x">
             <div class="cell">
-                <label>Upload Image
-                    <input type="file" @change="previewImage">
-                </label>
-                <img v-if="imageUrl" :src="imageUrl" alt="Uploaded Image" style="max-width: 100%; height: auto;">
-                <center><h1>{{ title }}</h1></center>
+                <!-- <div class="cell"> -->
+                <center><img src="./asep-logo.jpg" alt="ASEP Logo" style="max-width:15%; height: auto;"></center>
+                <center><h2>{{ title }}</h2></center>
             </div>
         </div>
 
@@ -63,7 +61,7 @@
         <!-- Display calculated value -->
         <div class="grid-x grid-padding-x">
             <div class="cell">
-                <p>DATA : SAM {{ reportss_sam }} , {{ s1 }} SHADE {{ ss2 }} , {{ ss12 }}</p>
+                <p>DATA : SAM {{reportss_sam }} , {{ s1 }} SHADE {{ ss2 }} , {{ ss12 }}</p>
             </div>
         </div>
 
@@ -97,10 +95,11 @@
             $(document).foundation();
         });
 
+
         new Vue({
             el: "#app",
             data: {
-                title: "ASEP Chapter 3 - Sensitivity Analysis",
+                title: "ASEP Chapter 3 Comittee - Sensitivity Analysis",
                 selectedCity: null,
                 materialType: "concrete",
                 cities: [
