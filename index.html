@@ -172,38 +172,24 @@
 
                     this.soilTypes.forEach((soilType) => {
                         const data = generateSensivity(name, this.materialType, fault, soilType, ss, s1, ss2, ss12);
-                        const period = data.period;
 
-                        // Store data for each soil type for percentage calculation
                         this.dataBySoilType[soilType] = {
                             period: data.period,
                             nscp: data.nscp15,
                             sam: data.sam,
-                            shade: data.shade
+                            shade: data.shade,
+                            nscp_min: data.nscp15_min,
+                            sam_min: data.sam_min,
+                            shade_min: data.shade_min,
                         };
 
                         const traces = [
-                            {
-                                x: data.period,
-                                y: data.nscp15,
-                                mode: 'lines',
-                                name: 'NSCP 2015',
-                                line: { color: 'blue' }
-                            },
-                            {
-                                x: data.period,
-                                y: data.sam,
-                                mode: 'lines',
-                                name: 'SAM',
-                                line: { color: 'red' }
-                            },
-                            {
-                                x: data.period,
-                                y: data.shade,
-                                mode: 'lines',
-                                name: 'SHADE',
-                                line: { color: 'green' }
-                            }
+                            { x: data.period, y: data.nscp15, mode: 'lines', name: 'NSCP 2015', line: { color: 'blue' } },
+                            { x: data.period, y: data.sam, mode: 'lines', name: 'SAM', line: { color: 'red' } },
+                            { x: data.period, y: data.shade, mode: 'lines', name: 'SHADE', line: { color: 'green' } },
+                            { x: data.period, y: Array(data.period.length).fill(data.nscp15_min), mode: 'lines', name: 'NSCP 2015 Min.', line: { color: 'blue', dash: 'dash' } },
+                            { x: data.period, y: Array(data.period.length).fill(data.sam_min), mode: 'lines', name: 'SAM Min.', line: { color: 'red', dash: 'dash' } },
+                            { x: data.period, y: Array(data.period.length).fill(data.shade_min), mode: 'lines', name: 'SHADE Min.', line: { color: 'green', dash: 'dash' } },
                         ];
 
                         const layout = {
@@ -219,7 +205,6 @@
                     const data = this.dataBySoilType[soilType];
                     if (!data) return "-";
 
-                    // Find the closest period in the generated data
                     const closestIndex = data.period.reduce((prevIndex, curr, index) => {
                         return Math.abs(curr - fixedPeriod) < Math.abs(data.period[prevIndex] - fixedPeriod) ? index : prevIndex;
                     }, 0);
@@ -227,7 +212,6 @@
                     const value1 = data[series1][closestIndex];
                     const value2 = data[series2][closestIndex];
 
-                    // Calculate percentage difference
                     if (value1 === 0 || isNaN(value1) || isNaN(value2)) return "-";
                     const percentageDifference = ((value1 - value2) / value1) * 100;
 
@@ -237,7 +221,6 @@
                     const data = this.dataBySoilType[soilType];
                     if (!data) return "-";
 
-                    // Find the closest period in the generated data
                     const closestIndex = data.period.reduce((prevIndex, curr, index) => {
                         return Math.abs(curr - fixedPeriod) < Math.abs(data.period[prevIndex] - fixedPeriod) ? index : prevIndex;
                     }, 0);
