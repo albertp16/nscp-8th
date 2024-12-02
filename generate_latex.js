@@ -100,17 +100,12 @@ function generateSensivity(name, structure_type, fault, soil_type, ss, s1, ss2, 
     // debugger
     var height = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150];
     
-    // let string_output_nscp_2015 = '\\addplot [color=blue, mark=none] coordinates {';
-    // let string_output_nscp_2024 = '\\addplot [color=red, mark=none] coordinates {';
-    // let string_output_nscp_2024_shade = '\\addplot [color=green, mark=none] coordinates {';
     var nscp_2015_data = [] //`(${governing_15.toFixed(4)},${i})`;
     var nscp_2024_sam_data = []// `(${governing_8th.toFixed(4)},${i})`;
     var nscp_2024_shade_data = []//`(${governing_8tha.toFixed(4)},${i})`;
     var period_plot_data = []
     for (var i = 0; i <= 15; i += 0.1) {
-        // var period_init = calculatePeriodNSCP2015(i, structure_type);
-        // var period_nscp2015 = calculatePeriodNSCP2015(i, structure_type);
-        // var period_nscp8th = calculatePeriodNSCP8TH(i, structure_type);
+
         period_plot_data.push(i); 
 
         var base_shear_15 = new BaseShear15(4, nv, ca, cv, importance_factor, R1, i, normalize_weight);
@@ -139,39 +134,4 @@ function generateSensivity(name, structure_type, fault, soil_type, ss, s1, ss2, 
         "sam_min" : governing_8th_min,
         "shade_min" : governing_8tha_min
     }
-    // string_output_nscp_2015 += '};';
-    // string_output_nscp_2024 += '};';
-    // string_output_nscp_2024_shade += '};';
-
-    // console.log(`
-    //     \\begin{frame}
-    //     \\frametitle{ ${name} ${report_title_soil} ${report_title} }
-    //     R = ${R1} ; R = ${R2} ; TL = 8 secs
-    //     \\begin{figure}
-    //         \\centering
-    //         \\begin{tikzpicture}
-    //             \\begin{axis}[
-    //                 title={Governing Base Shear Coef. Vs. Height (m)},
-    //                 xlabel={Base Shear Coef.},
-    //                 ylabel={Height (m)},
-    //                 legend style={font=\\tiny, at={(1.2,-0.05)}, anchor=north, legend columns=1},
-    //                 grid=both,
-    //                 width=0.8\\textwidth,
-    //                 height=0.6\\textwidth,
-    //                 scaled ticks=false,
-    //                 ticklabel style = {font=\\tiny},
-    //                 every axis plot/.append style={thick},
-    //                 ]
-
-    //     `);
-    // console.log(string_output_nscp_2015);
-    // console.log(string_output_nscp_2024);
-    // console.log(string_output_nscp_2024_shade);
-    // console.log(`
-    //                     \\legend{2015, SAM-PH, SHADE}
-    //                 \\end{axis}
-    //             \\end{tikzpicture}
-    //         \\end{figure}
-    //     \\end{frame}
-    //     `);
 }

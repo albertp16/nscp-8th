@@ -27,6 +27,7 @@
     <div id="app" class="grid-container">
         <div class="grid-x grid-padding-x">
             <div class="cell">
+                <!-- <div class="cell"> -->
                 <center><img src="./asep-logo.jpg" alt="ASEP Logo" style="max-width:15%; height: auto;"></center>
                 <center><h2>{{ title }}</h2></center>
             </div>
@@ -60,63 +61,49 @@
         <!-- Display calculated value -->
         <div class="grid-x grid-padding-x">
             <div class="cell">
-                <p>DATA: SAM {{reportss_sam}}, {{s1}} SHADE {{ss2}}, {{ss12}}</p>
+                <p>DATA : SAM {{reportss_sam }} , {{ s1 }} SHADE {{ ss2 }} , {{ ss12 }}</p>
             </div>
         </div>
 
-        <!-- Plot and differences area -->
-        <div v-for="soilType in soilTypes" class="grid-x grid-padding-x">
-            <div class="cell medium-6">
-                <div :id="'graph_' + soilType" style="width:100%;height:500px;"></div>
-            </div>
-            <div class="cell medium-6">
-                <table class="hover">
-                    <thead>
-                        <tr>
-                            <th>Period (sec)</th>
-                            <th>Spectral Acceleration (NSCP)</th>
-                            <th>Spectral Acceleration (SHADE)</th>
-                            <th>Spectral Acceleration (SAM)</th>
-                            <th>NSCP vs SAM (%)</th>
-                            <th>NSCP vs SHADE (%)</th>
-                            <th>SAM vs SHADE (%)</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="period in fixedPeriods">
-                            <td>{{ period }}</td>
-                            <td>{{ getSpectralAcceleration(soilType, period, 'nscp') }}</td>
-                            <td>{{ getSpectralAcceleration(soilType, period, 'shade') }}</td>
-                            <td>{{ getSpectralAcceleration(soilType, period, 'sam') }}</td>
-                            <td>{{ calculateDifference(soilType, period, 'nscp', 'sam') }}</td>
-                            <td>{{ calculateDifference(soilType, period, 'nscp', 'shade') }}</td>
-                            <td>{{ calculateDifference(soilType, period, 'sam', 'shade') }}</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        <!-- Plot area -->
+<!-- Plot areas for each soil type -->
+<div class="grid-x grid-padding-x">
+    <div class="cell medium-6">
+        <div id="graph_s_a" style="width:100%;height:500px;"></div>
+    </div>
+    <div class="cell medium-6">
+        <div id="graph_s_b" style="width:100%;height:500px;"></div>
+    </div>
+    <div class="cell medium-6">
+        <div id="graph_s_c" style="width:100%;height:500px;"></div>
+    </div>
+    <div class="cell medium-6">
+        <div id="graph_s_d" style="width:100%;height:500px;"></div>
+    </div>
+    <div class="cell medium-6">
+        <div id="graph_s_e" style="width:100%;height:500px;"></div>
+    </div>
+</div>
     </div>
 
     <!-- Foundation JS -->
     <script src="https://cdn.jsdelivr.net/npm/foundation-sites@6.7.5/dist/js/foundation.min.js"></script>
 
     <script>
+        // Initialize Foundation once the DOM is ready
         $(document).ready(function () {
             $(document).foundation();
         });
 
+
         new Vue({
             el: "#app",
             data: {
-                title: "ASEP Chapter 3 Committee - Sensitivity Analysis",
+                title: "ASEP Chapter 3 Comittee - Sensitivity Analysis",
                 selectedCity: null,
                 materialType: "concrete",
-                soilTypes: ["s_a", "s_b", "s_c", "s_d", "s_e"],
-                fixedPeriods: [0.1, 0.2, 0.5, 1, 1.5, 2, 2.5, 3, 4, 5],
-                dataBySoilType: {},
                 cities: [
-                { name: "Mati, Davao Oriental", fault_input: 2.6, ss_shade: 2.6, s1_shade: 0.7, ss_sam: 2.95, s1_sam: 1.1 },
+                    { name: "Mati, Davao Oriental", fault_input: 2.6, ss_shade: 2.6, s1_shade: 0.7, ss_sam: 2.95, s1_sam: 1.1 },
                     { name : "Manila", fault_input : 9.6, ss_shade : 1.59, s1_shade: 0.64, ss_sam: 1.26, s1_sam: 0.51},
                     { name: "Bogo City", fault_input: 0.38, ss_shade: 1.36, s1_shade: 0.5, ss_sam: 1.45, s1_sam: 0.48 },
                     { name: "Moalboal", fault_input: 8.1, ss_shade: 1.43, s1_shade: 0.48, ss_sam: 1.28, s1_sam: 0.45 },
@@ -159,93 +146,101 @@
                     { name: "Cagayan de Oro City", fault_input: 17.6, ss_shade: 1.09, s1_shade: 0.47, ss_sam: 1.27, s1_sam: 0.48 },
                     { name: "Iligan City", fault_input: 10.2, ss_shade: 1.91, s1_shade: 0.75, ss_sam: 1.61, s1_sam: 0.61 },
                     { name: "Malaybalay City", fault_input: 1.5, ss_shade: 1.66, s1_shade: 0.74, ss_sam: 1.74, s1_sam: 0.6 }
-                ]
+        
+                ],
+                calculatedValue: 0
             },
             mounted() {
+                // Set default selected city and material type
                 this.selectedCity = this.cities[0];
                 this.materialType = "concrete";
             },
             methods: {
-                generateGraph() {
-                    const city = this.selectedCity;
-                    const { name, fault_input: fault, ss_sam: ss, s1_sam: s1, ss_shade: ss2, s1_shade: ss12 } = city;
+    generateGraph() {
+        var city = this.selectedCity;
+        var name = city.name;
+        var fault = city.fault_input;
+        var ss = city.ss_sam;
+        var s1 = city.s1_sam;
+        var ss2 = city.ss_shade;
+        var ss12 = city.s1_shade;
+        var material = this.materialType;
+        var heights = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 105, 110, 115, 120, 125, 130, 135, 140, 145, 150];
+        
+        var soil_types = ["s_a", "s_b", "s_c", "s_d", "s_e"];
+        // var soil_types_pretty = ["Sa", "Sb", "Sc", "Sd", "Se"];
 
-                    this.soilTypes.forEach((soilType) => {
-                        const data = generateSensivity(name, this.materialType, fault, soilType, ss, s1, ss2, ss12);
-                        const period = data.period;
+        soil_types.forEach((soil_type, index) => {
+            
+            var generate_data = generateSensivity(name, material, fault, soil_type, ss, s1, ss2, ss12);
+            
+            // Perform division calculation based on selected city's ss_sam and s1_sam values
+            this.calculatedValue = (ss / s1).toFixed(2);
+            this.reportss_sam = ss;
 
-                        // Store data for each soil type for percentage calculation
-                        this.dataBySoilType[soilType] = {
-                            period: data.period,
-                            nscp: data.nscp15,
-                            sam: data.sam,
-                            shade: data.shade
-                        };
+            const trace1 = {
+                        x: generate_data["period"], // Periods for NSCP 2015
+                        y: generate_data["nscp15"],  // Heights
+                        mode: 'lines',
+                        name: 'NSCP 2015',
+                        line: { color: 'blue' }
+                    };
 
-                        const traces = [
-                            {
-                                x: data.period,
-                                y: data.nscp15,
-                                mode: 'lines',
-                                name: 'NSCP 2015',
-                                line: { color: 'blue' }
-                            },
-                            {
-                                x: data.period,
-                                y: data.sam,
-                                mode: 'lines',
-                                name: 'SAM',
-                                line: { color: 'red' }
-                            },
-                            {
-                                x: data.period,
-                                y: data.shade,
-                                mode: 'lines',
-                                name: 'SHADE',
-                                line: { color: 'green' }
-                            }
-                        ];
+                    const trace2 = {
+                        x: generate_data["period"], // Periods for NSCP 8th
+                        y: generate_data["sam"],  // Heights
+                        mode: 'lines',
+                        name: 'SAM',
+                        line: { color: 'red' }
+                    };
 
-                        const layout = {
-                            title: `Base Shear Coefficient vs Period for ${name} (Soil Type: ${soilType.toUpperCase()})`,
-                            xaxis: { title: 'Period (sec)' },
-                            yaxis: { title: 'Base Shear Coefficient' }
-                        };
+                    const trace3 = {
+                        x: generate_data["period"], // Periods for NSCP 8th
+                        y: generate_data["shade"],  // Heights
+                        mode: 'lines',
+                        name: 'SHADE',
+                        line: { color: 'green' }
+                    };
+                    // generate_data["nscp15_min"] 
+                    const trace4 = {
+                        x: generate_data["period"], // Periods for NSCP 2015
+                        y: Array(generate_data["period"].length).fill(generate_data["nscp15_min"]), // Constant y value
+                        mode: 'lines',
+                        name: 'NSCP 2015 Min.',
+                        line: { color: 'blue', dash: 'dash' }
+                    };
 
-                        Plotly.newPlot(`graph_${soilType}`, traces, layout);
-                    });
-                },
-                calculateDifference(soilType, fixedPeriod, series1, series2) {
-                    const data = this.dataBySoilType[soilType];
-                    if (!data) return "-";
+                    const trace5 = {
+                        x: generate_data["period"], // Periods for NSCP 2015
+                        y: Array(generate_data["period"].length).fill(generate_data["sam_min"]), // Constant y value
+                        mode: 'lines',
+                        name: 'SAM Min.',
+                        line: { color: 'red', dash: 'dash' }
+                    };
 
-                    // Find the closest period in the generated data
-                    const closestIndex = data.period.reduce((prevIndex, curr, index) => {
-                        return Math.abs(curr - fixedPeriod) < Math.abs(data.period[prevIndex] - fixedPeriod) ? index : prevIndex;
-                    }, 0);
+                    const trace6 = {
+                        x: generate_data["period"], // Periods for NSCP 2015
+                        y: Array(generate_data["period"].length).fill(generate_data["shade_min"]), // Constant y value
+                        mode: 'lines',
+                        name: 'SHADE Min.',
+                        line: { color: 'green', dash: 'dash' }
+                    };
 
-                    const value1 = data[series1][closestIndex];
-                    const value2 = data[series2][closestIndex];
+                    // data.push(trace4);
+            const data = [trace1, trace2, trace3,trace4,trace5,trace6];
+            
+            var soil_report_pretty = (soil_type == "s_a") ? "Sa" : (soil_type == "s_b") ? "Sb" : (soil_type == "s_c") ? "Sc" : (soil_type == "s_d") ? "Sd" : "Se";
 
-                    // Calculate percentage difference
-                    if (value1 === 0 || isNaN(value1) || isNaN(value2)) return "-";
-                    const percentageDifference = ((value1 - value2) / value1) * 100;
+            const layout = {
+                title: `Base Shear Coefficient vs Period for ${city.name} (Soil Type: ${soil_report_pretty})`,
+                xaxis: { title: 'Period (sec)' },
+                yaxis: { title: 'Base Shear Coefficient' }
+            };
 
-                    return isNaN(percentageDifference) ? "-" : percentageDifference.toFixed(2) + "%";
-                },
-                getSpectralAcceleration(soilType, fixedPeriod, series) {
-                    const data = this.dataBySoilType[soilType];
-                    if (!data) return "-";
-
-                    // Find the closest period in the generated data
-                    const closestIndex = data.period.reduce((prevIndex, curr, index) => {
-                        return Math.abs(curr - fixedPeriod) < Math.abs(data.period[prevIndex] - fixedPeriod) ? index : prevIndex;
-                    }, 0);
-
-                    const value = data[series][closestIndex];
-                    return isNaN(value) ? "-" : value.toFixed(4);
-                }
-            }
+            Plotly.newPlot(`graph_${soil_type}`, data, layout);
+        });
+    }
+    }
         });
     </script>
 </body>
